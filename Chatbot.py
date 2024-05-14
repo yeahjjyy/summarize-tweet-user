@@ -101,15 +101,15 @@ def get_all_twitter():
 
 
 with st.sidebar:
-    selected_option = st.selectbox('请选择一个公司', ['anthropic', 'openai'])
+    selected_option = st.selectbox('公司', ['openai'])
     if selected_option == 'anthropic':
-        model_selected_option = st.selectbox('请选择一个模型', ['claude-3-opus-20240229', 'claude-3-sonnet-20240229',
+        model_selected_option = st.selectbox('模型', ['claude-3-opus-20240229', 'claude-3-sonnet-20240229',
                                                                 'claude-3-haiku-20240307'])
     else:
-        model_selected_option = st.selectbox('请选择一个模型',
-                                             ['gpt-4o', 'gpt-4-0125-preview', 'gpt-4-turbo', 'gpt-3.5-turbo-0125'])
-    custom_openai_api_key = st.text_input("API Key", key="chatbot_api_key", type="password")
-
+        model_selected_option = st.selectbox('模型',
+                                             ['gpt-4o'])
+    # custom_openai_api_key = st.text_input("API Key", key="chatbot_api_key", type="password")
+    custom_openai_api_key = st.secrets["key"]
     if 'selected_projects' not in st.session_state:
         st.session_state['selected_projects'] = []
 
@@ -123,7 +123,7 @@ with st.sidebar:
 
     # 设置日期范围的初始值
     end_date = datetime.date.today()
-    start_date = end_date - datetime.timedelta(days=2)
+    start_date = end_date - datetime.timedelta(days=1)
 
     # 使用st.date_input获取日期范围
     date_range = st.date_input("Select a date range:", [start_date, end_date])
@@ -160,9 +160,10 @@ with st.sidebar:
             'Please select one or more twitter',
             st.session_state.selection_output,
         )
-    filter_option = st.selectbox(
-        "Please select YES or NO filter",
-        ("YES", "NO"))
+    # filter_option = st.selectbox(
+    #     "Please select YES or NO filter",
+    #     ("YES", "NO"))
+    filter_option = 'YES'
     key_words = st_tags_sidebar(
         label='Enter Keywords tag:',
         text='Press enter to add tweet keywords tag',
@@ -188,10 +189,11 @@ with st.sidebar:
     # with col35:
     #     retweet_count = st.number_input("Enter retweet count", min_value=0, max_value=1000000000, step=1,help='The minimum retweet count of tweet. Only tweets exceeding this count will be returned.')
 
-    show_fields = st.multiselect(
-        'Please select one or more fields',
-        ['author', 'timestamp', 'source link', 'tweet content'],
-    )
+    # show_fields = st.multiselect(
+    #     'Please select one or more fields',
+    #     ['author', 'timestamp', 'source link', 'tweet content'],
+    # )
+    show_fields = ['author', 'timestamp', 'source link', 'tweet content']
 
 if custom_openai_api_key:
     if selected_option == 'anthropic':
@@ -387,8 +389,8 @@ def button_click2():
         elif not options:
             is_continue = "please select twitter."
 
-        elif abs(end_datetime - start_datetime) > timedelta(days=3):
-            is_continue = "The date interval is more than 3 days."
+        elif abs(end_datetime - start_datetime) > timedelta(days=1):
+            is_continue = "The date interval is more than 1 days."
 
     except NameError as e:
         is_continue = "please select start_time and end_time."

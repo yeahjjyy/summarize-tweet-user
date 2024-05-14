@@ -157,7 +157,7 @@ async def summarize_tweet_text_by_token(tweets_text: str, prompt: str, chat):
         query.append(HumanMessage(content=prompt + d))
         query_list.append(query)
 
-    response = await chat.agenerate(query_list, tags=['streamlit-summarize-tweets'])
+    response = await chat.agenerate(query_list, tags=['streamlit-user-summarize-tweets'])
     parsed_message_list = []
     for generation in enumerate(response.generations):
         parsed_message_list.append(generation[1][0].text)
