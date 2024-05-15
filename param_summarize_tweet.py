@@ -78,6 +78,8 @@ async def summarize_tweet_text_by_token(tweets_text: str, prompt: str, chat):
     # Iterate through each tweet and group by author
     for tweet in individual_tweets:
         tweet_lines = tweet.strip().split('\n')
+        if len(tweet_lines) < 2:
+            continue
         author = tweet_lines[0]
         timestamp = tweet_lines[1]
         tweets_dict = {

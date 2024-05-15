@@ -20,6 +20,7 @@ os.environ["LANGCHAIN_TRACING_V2"] = 'true'
 os.environ["LANGCHAIN_ENDPOINT"] = 'https://api.smith.langchain.com'
 os.environ["LANGCHAIN_PROJECT"] = st.secrets["LANGCHAIN_PROJECT"]
 os.environ["LANGCHAIN_API_KEY"] = st.secrets["LANGCHAIN_API_KEY"]
+
 hide_st_style = """
 <style>
 #MainMenu {visibility: hidden;}
@@ -39,8 +40,10 @@ def get_engine():
     return engine
 
 
-# @st.cache_data(ttl=60)
+@st.cache_data(ttl=600)
 def get_twitter(project_name_list):
+    print("刷新数据")
+
     engine = get_engine()
 
     # 查询所有的twitter博主
@@ -83,6 +86,15 @@ def get_twitter(project_name_list):
             result = conn.execute(query_twitter)
             for row in result:
                 twitter_list.append(row[0])
+
+    return twitter_list
+
+def get_all_twitter():
+    # st.write("You selected:", st.session_state.selected_projects )
+
+    # if not st.session_state.selected_projects:
+    #     st.session_state['selection_output'] = []
+    twitter_list =  get_twitter(['daliy_twitter'])
     if twitter_list:
         twitter_list.insert(0, 'all')
         st.session_state['selection_output'] = twitter_list
@@ -90,23 +102,13 @@ def get_twitter(project_name_list):
         st.session_state['selection_output'] = ['no data']
     return twitter_list
 
-@st.cache_data(ttl=600)
-def get_all_twitter():
-    # st.write("You selected:", st.session_state.selected_projects )
-
-    # if not st.session_state.selected_projects:
-    #     st.session_state['selection_output'] = []
-
-    return get_twitter(['daliy_twitter'])
-
-
 with st.sidebar:
-    selected_option = st.selectbox('公司', ['openai'])
+    selected_option = st.selectbox('company', ['openai'])
     if selected_option == 'anthropic':
-        model_selected_option = st.selectbox('模型', ['claude-3-opus-20240229', 'claude-3-sonnet-20240229',
+        model_selected_option = st.selectbox('model', ['claude-3-opus-20240229', 'claude-3-sonnet-20240229',
                                                                 'claude-3-haiku-20240307'])
     else:
-        model_selected_option = st.selectbox('模型',
+        model_selected_option = st.selectbox('model',
                                              ['gpt-4o'])
     # custom_openai_api_key = st.text_input("API Key", key="chatbot_api_key", type="password")
     custom_openai_api_key = st.secrets["key"]
