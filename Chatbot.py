@@ -20,7 +20,6 @@ os.environ["LANGCHAIN_TRACING_V2"] = 'true'
 os.environ["LANGCHAIN_ENDPOINT"] = 'https://api.smith.langchain.com'
 os.environ["LANGCHAIN_PROJECT"] = st.secrets["LANGCHAIN_PROJECT"]
 os.environ["LANGCHAIN_API_KEY"] = st.secrets["LANGCHAIN_API_KEY"]
-
 hide_st_style = """
 <style>
 #MainMenu {visibility: hidden;}
@@ -396,7 +395,9 @@ def button_click2():
 
         elif abs(end_datetime - start_datetime) > timedelta(days=1):
             is_continue = "The date interval is more than 1 days."
-
+        elif not key_words or len(key_words) < 1:
+            is_continue = "Please enter at least one keyword tag"
+ 
     except NameError as e:
         is_continue = "please select start_time and end_time."
     data = get_tweet_by_time(is_continue)
@@ -510,7 +511,7 @@ if st.session_state.last_content and len(st.session_state.last_content) >= 100 a
     with st.container(height=500):
         st.code(st.session_state.kol_tweet_output)
     with st.container(height=80):
-        st.chat_input(placeholder="please input prompt", on_submit=prompt_summit_2, key="prompt")
+        st.chat_input(placeholder="prompt 1: to get middle results", on_submit=prompt_summit_2, key="prompt")
     st.download_button(
         label="export",
         data=st.session_state.kol_tweet_output,
@@ -540,7 +541,7 @@ if st.session_state.kol_tweet_output and len(st.session_state.kol_tweet_output) 
     with st.container(height=500):
         st.code(st.session_state.kol_tweet_output)
     with st.container(height=80):
-        st.chat_input(placeholder="please input prompt", on_submit=prompt_summit_2, key="prompt")
+        st.chat_input(placeholder="prompt 1: to get middle results", on_submit=prompt_summit_2, key="prompt")
     st.download_button(
         label="export",
         data=st.session_state.kol_tweet_output,
@@ -555,7 +556,7 @@ if st.session_state.kol_tweet_output and len(st.session_state.kol_tweet_output) 
     with st.container(height=500):
         st.code(st.session_state.final_kol_tweet_output)
     with st.container(height=80):
-        st.chat_input(placeholder="please input prompt", on_submit=final_prompt_summit, key="final_prompt")
+        st.chat_input(placeholder="prompt2: to get ultimate results", on_submit=final_prompt_summit, key="final_prompt")
     st.download_button(
         label="export",
         data=st.session_state.final_kol_tweet_output,
