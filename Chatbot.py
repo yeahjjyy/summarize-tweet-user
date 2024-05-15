@@ -40,7 +40,7 @@ def get_engine():
     return engine
 
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=10)
 def get_twitter(project_name_list):
     print("刷新数据")
 
