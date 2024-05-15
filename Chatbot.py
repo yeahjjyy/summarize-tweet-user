@@ -90,14 +90,14 @@ def get_twitter(project_name_list):
         st.session_state['selection_output'] = ['no data']
     return twitter_list
 
-
+@st.cache_data(ttl=600)
 def get_all_twitter():
     # st.write("You selected:", st.session_state.selected_projects )
 
-    if not st.session_state.selected_projects:
-        st.session_state['selection_output'] = []
+    # if not st.session_state.selected_projects:
+    #     st.session_state['selection_output'] = []
 
-    return get_twitter(st.session_state.selected_projects)
+    return get_twitter(['daliy_twitter'])
 
 
 with st.sidebar:
@@ -113,14 +113,15 @@ with st.sidebar:
     if 'selected_projects' not in st.session_state:
         st.session_state['selected_projects'] = []
 
-    project_options = st.multiselect(
-        'Please select one or more project',
-        ['daliy_twitter'],
-        default=['daliy_twitter'],
-        key='selected_projects',
-        on_change=get_all_twitter
-    )
-
+    # project_options = st.multiselect(
+    #     'Please select one or more project',
+    #     ['daliy_twitter'],
+    #     default=['daliy_twitter'],
+    #     key='selected_projects',
+    #     on_change=get_all_twitter
+    # )
+    project_options = ['daliy_twitter']
+    get_all_twitter()
     # 设置日期范围的初始值
     end_date = datetime.date.today()
     start_date = end_date - datetime.timedelta(days=1)
