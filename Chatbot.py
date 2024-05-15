@@ -40,7 +40,7 @@ def get_engine():
     return engine
 
 
-@st.cache_data(ttl=10)
+# @st.cache_data(ttl=600)
 def get_twitter(project_name_list):
     print("刷新数据")
 
@@ -90,10 +90,7 @@ def get_twitter(project_name_list):
     return twitter_list
 
 def get_all_twitter():
-    # st.write("You selected:", st.session_state.selected_projects )
 
-    # if not st.session_state.selected_projects:
-    #     st.session_state['selection_output'] = []
     twitter_list =  get_twitter(['daliy_twitter'])
     if twitter_list:
         twitter_list.insert(0, 'all')
@@ -123,7 +120,12 @@ with st.sidebar:
     #     on_change=get_all_twitter
     # )
     project_options = ['daliy_twitter']
-    get_all_twitter()
+
+    if 'selection_output' not in st.session_state:
+        st.session_state['selection_output'] = []
+
+    if not st.session_state.selection_output or len(st.session_state.selection_output)==1:
+        get_all_twitter()
     # 设置日期范围的初始值
     end_date = datetime.date.today()
     start_date = end_date - datetime.timedelta(days=1)
@@ -467,61 +469,16 @@ export_file_name3 = str(uuid.uuid4()) + "_twitter.txt"
 with display_container0:
     if not st.session_state.last_content or len(st.session_state.last_content) < 100:
         st.markdown(''':rainbow[tweet content]''')
-    # elif st.session_state.last_content and len(st.session_state.last_content) >= 100 and (not st.session_state.kol_tweet_output or len(st.session_state.kol_tweet_output) < 50):
-    #     col13, col12 = st.columns(2)
-    #     with col13:
-    #         st.markdown(''':rainbow[tweet content]''')
-    #     with col12:
-    #         st.markdown(''':rainbow[tweet summrize result]''')
-    # elif st.session_state.kol_tweet_output and len(st.session_state.kol_tweet_output) > 50:
-    #     col13, col12,col66 = st.columns(3)
-    #     with col13:
-    #         st.markdown(''':rainbow[tweet content]''')
-    #     with col12:
-    #         st.markdown(''':rainbow[tweet summrize result]''')
-    #     with col66:
-    #         st.markdown(''':rainbow[final tweet summrize result]''')
+    
 with display_container:
     if not st.session_state.last_content or len(st.session_state.last_content) < 100:
         with st.container(height=500):
             st.code(truncate_string(st.session_state.last_content))
-    # elif st.session_state.last_content and len(st.session_state.last_content) >= 100 and (not st.session_state.kol_tweet_output or len(st.session_state.kol_tweet_output) < 50):
-    #     col6,col7 = st.columns(2)
-
-    #     with col6:
-    #         with st.container(height=500):
-    #             st.code(truncate_string(st.session_state.last_content))
-    #     with col7:
-    #         with st.container(height=500):
-    #             st.code(st.session_state.kol_tweet_output)
-    # elif st.session_state.kol_tweet_output and len(st.session_state.kol_tweet_output) > 50:
-    #     col6,col7,col31 = st.columns(3)
-    #     with col6:
-    #         with st.container(height=500):
-    #             st.code(truncate_string(st.session_state.last_content))
-    #     with col7:
-    #         with st.container(height=500):
-    #             st.code(st.session_state.kol_tweet_output)
-    #     with col31:
-    #         with st.container(height=500):
-    #             st.code(st.session_state.final_kol_tweet_output)
+    
 with display_container4:
     if not st.session_state.last_content or len(st.session_state.last_content) < 100:
         st.button("get tweet data", type="primary", on_click=button_click2)
-    # elif st.session_state.last_content and len(st.session_state.last_content) >= 100 and (not st.session_state.kol_tweet_output or len(st.session_state.kol_tweet_output) <= 50):
-    #     col20, col21 = st.columns(2)
-    #     with col20:
-    #         st.button("get tweet data", type="primary", on_click=button_click2)
-    #     with col21:
-    #         st.chat_input(placeholder="please input prompt",on_submit=prompt_summit,key="prompt")
-    # elif st.session_state.kol_tweet_output and len(st.session_state.kol_tweet_output)>50:
-    #     col20, col21,col23 = st.columns(3)
-    #     with col20:
-    #         st.button("get tweet data", type="primary", on_click=button_click2)
-    #     with col21:
-    #         st.chat_input(placeholder="please input prompt",on_submit=prompt_summit,key="prompt")
-    #     with col23:
-    #         st.chat_input(placeholder="please input prompt",on_submit=final_prompt_summit,key="final_prompt")
+    
 with display_container2:
     if not st.session_state.last_content or len(st.session_state.last_content) < 100:
         st.download_button(
@@ -530,55 +487,7 @@ with display_container2:
             file_name=export_file_name,
             mime="text/plain"
         )
-    # elif st.session_state.last_content and len(st.session_state.last_content) >= 100 and (not st.session_state.kol_tweet_output or len(st.session_state.kol_tweet_output) < 50):
-    #     col3, col4 = st.columns(2)
-    #     if st.session_state.last_content:
-    #         with col3:
-    #             st.download_button(
-    #                 label="export",
-    #                 data=st.session_state.last_content,
-    #                 file_name=export_file_name,
-    #                 mime="text/plain"
-    #             )
-    #     if st.session_state.kol_tweet_output:
-    #         with col4:
-    #             st.download_button(
-    #                 label="export",
-    #                 data=st.session_state.kol_tweet_output,
-    #                 file_name=export_file_name2,
-    #                 mime="text/plain"
-    #             )
-    # elif st.session_state.kol_tweet_output and len(st.session_state.kol_tweet_output) > 50:
-    #     col3, col4,col34 = st.columns(3)
-    #     if st.session_state.last_content:
-    #         with col3:
-    #             st.download_button(
-    #                 label="export",
-    #                 data=st.session_state.last_content,
-    #                 file_name=export_file_name,
-    #                 mime="text/plain"
-    #             )
-    #     if st.session_state.kol_tweet_output:
-    #         with col4:
-    #             st.download_button(
-    #                 label="export",
-    #                 data=st.session_state.kol_tweet_output,
-    #                 file_name=export_file_name2,
-    #                 mime="text/plain"
-    #             )
-    #     if st.session_state.final_kol_tweet_output:
-    #         with col34:
-    #             st.download_button(
-    #                 label="export",
-    #                 data=st.session_state.final_kol_tweet_output,
-    #                 file_name=export_file_name3,
-    #                 mime="text/plain"
-    #             )
-# if st.session_state.last_content:
-#     with display_container3:
-#         st.write('token length = '+ str(token_num))
-
-
+    
 if st.session_state.last_content and len(st.session_state.last_content) >= 100 and (
         not st.session_state.kol_tweet_output or len(st.session_state.kol_tweet_output) < 50):
 
