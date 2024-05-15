@@ -167,7 +167,7 @@ async def summarize_tweet_text_by_token(tweets_text: str, prompt: str, chat):
 ```'''
     for gpt_str in parsed_message_list:
         if gpt_str != '{"output": "N.A"}' and gpt_str != s:
-            gpt_result_str += (gpt_str + '--------------\n')
+            gpt_result_str += (gpt_str + '\n--------------\n')
     print('gpt_result_str=', gpt_result_str)
 
     st.session_state['total_result'] = gpt_result_str
