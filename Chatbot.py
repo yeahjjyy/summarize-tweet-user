@@ -197,7 +197,7 @@ with st.sidebar:
     #     'Please select one or more fields',
     #     ['author', 'timestamp', 'source link', 'tweet content'],
     # )
-    show_fields = ['author', 'timestamp', 'source link', 'tweet content']
+    show_fields = None
 
 if custom_openai_api_key:
     if selected_option == 'anthropic':
