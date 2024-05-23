@@ -65,7 +65,7 @@ def get_twitter(project_name_list):
     query_project_twitter = select(twitter_base_influencers.c.twitter_username).where(
         twitter_base_influencers.c.project_name_array.op('&&')(project_name_list))
     with engine.connect() as conn:
-        if project_name_list and 'daliy_twitter' in project_name_list:
+        if project_name_list and '6000kol' in project_name_list:
             # query_twitter = select(twitter_base_content.c.influencer_id).group_by(twitter_base_content.c.influencer_id)
             project_name_list = ['daliy_twitter', 'xinsight']
             query_project_twitter = select(twitter_base_influencers.c.twitter_username).where(
@@ -75,6 +75,10 @@ def get_twitter(project_name_list):
             for row in result:
                 twitter_list.append(row[0])
         else:
+            if project_name_list and 'Y' in project_name_list:
+                project_name_list = ['yeehagame']
+                query_project_twitter = select(twitter_base_influencers.c.twitter_username).where(
+        twitter_base_influencers.c.project_name_array.op('&&')(project_name_list))
             result = conn.execute(query_project_twitter)
             project_twitter_list = []
             for row in result:
@@ -90,7 +94,7 @@ def get_twitter(project_name_list):
 
 def get_all_twitter():
 
-    twitter_list =  get_twitter(['daliy_twitter'])
+    twitter_list =  get_twitter(project_options)
     if twitter_list:
         twitter_list.insert(0, 'all')
         st.session_state['selection_output'] = twitter_list
@@ -111,14 +115,14 @@ with st.sidebar:
     if 'selected_projects' not in st.session_state:
         st.session_state['selected_projects'] = []
 
-    # project_options = st.multiselect(
-    #     'Please select one or more project',
-    #     ['daliy_twitter'],
-    #     default=['daliy_twitter'],
-    #     key='selected_projects',
-    #     on_change=get_all_twitter
-    # )
-    project_options = ['daliy_twitter']
+    project_options = st.multiselect(
+        'Please select one or more project',
+        ['6000kol','Y'],
+        default=['6000kol'],
+        key='selected_projects',
+        on_change=get_all_twitter
+    )
+    # project_options = ['daliy_twitter']
 
     if 'selection_output' not in st.session_state:
         st.session_state['selection_output'] = []
@@ -174,9 +178,16 @@ with st.sidebar:
         suggestions=['btc'],
         maxtags=100
     )
-    content_length_limit = st.number_input("Enter length", min_value=0, max_value=10000, step=1,
+    content_length_limit = st.number_input("Enter length", min_value=0, max_value=100000000, step=1,
                                            help='The minimum length of tweet content. Only tweets exceeding this length will be returned.')
 
+    # hot_count = st.number_input("Enter hot count", min_value=0, max_value=1000000000, step=1,
+    #                                        help='The minimum count of hot. Only tweet hot count exceeding this count will be returned.')
+    # like_count = st.number_input("Enter like count", min_value=0, max_value=1000000000, step=1,
+    #                                        help='The minimum count of like. Only tweet like count exceeding this count will be returned.')
+    # reply_count = st.number_input("Enter reply count", min_value=0, max_value=1000000000, step=1,
+    #                                        help='The minimum count of reply. Only tweet reply count exceeding this count will be returned.')
+   
     # col32, col33 = st.columns(2)
 
     # # 使用两个st.time_input获取时间范围
@@ -193,11 +204,11 @@ with st.sidebar:
     # with col35:
     #     retweet_count = st.number_input("Enter retweet count", min_value=0, max_value=1000000000, step=1,help='The minimum retweet count of tweet. Only tweets exceeding this count will be returned.')
 
-    # show_fields = st.multiselect(
-    #     'Please select one or more fields',
-    #     ['author', 'timestamp', 'source link', 'tweet content'],
-    # )
-    show_fields = None
+    show_fields = st.multiselect(
+        'Please select one or more fields',
+        ['author', 'timestamp', 'source link', 'tweet content','statics','hot'],
+    )
+    # show_fields = None
 
 if custom_openai_api_key:
     if selected_option == 'anthropic':
@@ -229,14 +240,81 @@ def all_elements_in_another(list1, list2):
     return set(list2).issubset(set(list1))
 
 
-def get_return_tweet(select_return_fields, row):
+def get_return_tweet_v2(select_return_fields,row,hot, 
+                                        likeCount,replyCount,quoteCount,retweetCount):
+    
+
+
     if not select_return_fields:
         return f'''author: {row[1]} 
 timestamp: {row[3]} 
 source link: {row[0]} 
 tweet content: {row[2]} {row[4] if row[4] else ''}
+statics: likeCount {likeCount} replyCount {replyCount} quoteCount {quoteCount} retweetCount {retweetCount} 
+hot: {hot if hot>0 else 'NA'}
 -------
 '''
+    desired_order = ['author', 'timestamp', 'source link', 'tweet content','statics','hot']
+    # 创建一个字典来存储每个元素的排序顺序
+    order_dict = {key: index for index, key in enumerate(desired_order)}
+
+    # 使用sorted()函数和自定义的排序键来对数组进行排序
+    sorted_array = sorted(select_return_fields, key=lambda x: order_dict[x])
+    output=''
+    # 遍历 original_array 中的每个元素，并根据元素内容构建输出字符串
+    for item in sorted_array:
+        if item == 'author':
+            output += f'author: {row[1]}\n'
+        elif item == 'timestamp':
+            output += f'timestamp: {row[3]}\n'
+        elif item == 'source link':
+            output += f'source link: {row[0]}\n'
+        elif item == 'tweet content':
+            output += f'tweet content: {row[2]} {row[4] if row[4] else ""}\n'
+        elif item == 'statics':
+            output += f'statics: likeCount {likeCount} replyCount {replyCount} quoteCount {quoteCount} retweetCount {retweetCount}\n'
+        elif item == 'hot':
+            output += f'hot: {hot if hot>0 else "NA"}\n'
+
+    # 添加分隔符
+    output += "-------\n"
+    return output
+
+def get_return_tweet(select_return_fields, row):
+
+    hot = 0
+    likeCount = row[5]
+    if not likeCount:
+        likeCount = 'NA'
+    else:
+        hot += likeCount
+    replyCount = row[6]
+    if not replyCount:
+        replyCount = 'NA'
+    else:
+        hot += replyCount           
+    quoteCount = row[7]
+    if not quoteCount:
+        quoteCount = 'NA'
+    else:
+        hot += quoteCount  
+    retweetCount = row[8]
+    if not retweetCount:
+        retweetCount = 'NA'
+    else:
+        hot += retweetCount
+
+
+    if not select_return_fields:
+        return f'''author: {row[1]} 
+timestamp: {row[3]} 
+source link: {row[0]} 
+tweet content: {row[2]} {row[4] if row[4] else ''}
+statics: likeCount {likeCount} replyCount {replyCount} quoteCount {quoteCount} retweetCount {retweetCount} 
+hot: {hot if hot>0 else 'NA'}
+-------
+'''
+    
     if all_elements_in_another(select_return_fields, ['author', 'timestamp']) or all_elements_in_another(
             select_return_fields, ['author', 'timestamp', 'tweet content']):
         return f'''author: {row[1]} 
@@ -321,19 +399,19 @@ def get_tweet_by_time(is_continue):
             influencer_ids = ", ".join(f"'{elem}'" for elem in st.session_state.selection_output)
             if filter_option == 'YES':
                 sql = text(
-                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text from twitter_base_content   where influencer_id in ({influencer_ids}) and trading_opportunity = 1 and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc ")
+                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text,like_count,reply_count,quote_count,retweet_count from twitter_base_content   where influencer_id in ({influencer_ids}) and trading_opportunity = 1 and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc ")
             else:
                 sql = text(
-                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text from twitter_base_content   where influencer_id in ({influencer_ids})  and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc ")
+                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text,like_count,reply_count,quote_count,retweet_count from twitter_base_content   where influencer_id in ({influencer_ids})  and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc ")
 
         else:
             influencer_ids = ", ".join(f"'{elem}'" for elem in options)
             if filter_option == 'YES':
                 sql = text(
-                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text from twitter_base_content  where influencer_id in ({influencer_ids}) and trading_opportunity = 1 and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc ")
+                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text,like_count,reply_count,quote_count,retweet_count from twitter_base_content  where influencer_id in ({influencer_ids}) and trading_opportunity = 1 and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc ")
             else:
                 sql = text(
-                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text from twitter_base_content  where influencer_id in ({influencer_ids}) and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc")
+                    f"select tweet_id, influencer_id,original_text ->> 'text' as tweet_content, publish_time, original_text -> 'quote' ->> 'text' as quote_text,like_count,reply_count,quote_count,retweet_count from twitter_base_content  where influencer_id in ({influencer_ids}) and publish_time_ts BETWEEN '{str(start_formatted_date)}' AND '{str(end_formatted_date)}' order by influencer_id asc, publish_time_ts desc")
         # sql = generate_sql(sql)
 
         result = conn.execute(sql)
@@ -347,13 +425,36 @@ def get_tweet_by_time(is_continue):
             # 判断是否包含某个字符
             if key_words and not contains_any_efficient((str({row[1]}) + str({row[2]}) + str({row[4]})), key_words):
                 continue
-            tweet = get_return_tweet(show_fields, row)
-            #             tweet = f'''author: {row[1]}
-            # timestamp: {row[3]}
-            # source link: {row[0]}
-            # tweet content: {row[2]} {row[4]}
-            # -------
-            # '''
+            hot = 0
+            likeCount = row[5]
+            if not likeCount:
+                likeCount = 'NA'
+            else:
+                hot += likeCount
+            replyCount = row[6]
+            if not replyCount:
+                replyCount = 'NA'
+            else:
+                hot += replyCount           
+            quoteCount = row[7]
+            if not quoteCount:
+                quoteCount = 'NA'
+            else:
+                hot += quoteCount  
+            retweetCount = row[8]
+            if not retweetCount:
+                retweetCount = 'NA'
+            else:
+                hot += retweetCount 
+            # if hot and hot < hot_count:
+            #     continue
+            # if like_count and (likeCount == 'NA' or likeCount < like_count):
+            #     continue
+            # if reply_count and (replyCount =='NA' or replyCount < reply_count):
+            #     continue
+            tweet = get_return_tweet_v2(show_fields, row,hot, 
+                                        likeCount,replyCount,quoteCount,retweetCount)
+            
             total_text += tweet
     return total_text
 
