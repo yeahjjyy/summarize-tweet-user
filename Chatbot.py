@@ -226,7 +226,8 @@ def contains_any_efficient(string, char_list):
     for item in char_list:
         # 将列表中的字符或子字符串转换为小写，以便不区分大小写进行比较
         item_lower = item.lower()
-        pattern = r'\b{}\b'.format(re.escape(item_lower))
+        # pattern = r'\b{}\b'.format(re.escape(item_lower))
+        pattern = r'(?<!\w){}(?!\w)'.format(re.escape(item_lower))
         # 检查小写形式的字符串是否在小写形式的原始字符串中
         if re.search(pattern, string_lower, re.IGNORECASE):
             return True
