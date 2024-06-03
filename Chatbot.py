@@ -213,9 +213,9 @@ with st.sidebar:
 if custom_openai_api_key:
     if selected_option == 'anthropic':
         chat = ChatAnthropic(
-            anthropic_api_key=custom_openai_api_key, model_name=model_selected_option, temperature=1)
+            anthropic_api_key=custom_openai_api_key, model_name=model_selected_option, temperature=1,max_tokens=4096)
     else:
-        chat = ChatOpenAI(openai_api_key=custom_openai_api_key, model_name=model_selected_option, temperature=1)
+        chat = ChatOpenAI(openai_api_key=custom_openai_api_key, model_name=model_selected_option, temperature=1,max_tokens=4096)
 
 
 def contains_any_efficient(string, char_list):
